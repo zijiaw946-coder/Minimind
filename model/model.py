@@ -1,6 +1,7 @@
 from transformers import PretrainedConfig
 
-#hugging face的类，规定了模型参数是什么样子的
+
+# hugging face的类，规定了模型参数是什么样子的
 class MokioMindConfig(PretrainedConfig):
     model_type = "mokiomind"
 
@@ -70,3 +71,20 @@ class MokioMindConfig(PretrainedConfig):
             if self.inference_rope_scaling
             else None
         )
+
+
+import torch
+import torch.nn as nn
+
+
+class RMSNorm(nn.Module):
+    def __init__(self, dim: int, eps: float = 1e-5):
+        super().__init__()
+        self.eps = eps
+        self.weight = nn.Parameter(torch.ones(dim))
+
+    def _norm(self, x):
+        return x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps)
+
+    def forward(self, x):
+        return self.weight * self._norm(x.float()).type_as(x)
